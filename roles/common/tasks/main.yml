@@ -1,0 +1,26 @@
+---
+# plays common across all servers
+
+- name: install tar, wget and other dependencies
+  apt: name={{ item }} state=installed
+  with_items:
+   - tar
+   - wget
+
+- name: download the puppet enterprise
+  get_url: url=https://s3.amazonaws.com/pe-builds/released/3.2.3/puppet-enterprise-3.2.3-ubuntu-12.04-amd64.tar.gz dest=/opt/puppet-enterprise.tar.gz
+
+- name: create pe directory
+  file: state=directory path=/opt/puppet-enterprise
+
+- name: extract the puppet enterprise
+  command: chdir=/opt/ tar -xvzf puppet-enterprise.tar.gz -C /opt/puppet-enterprise  --strip-components=1
+
+- name: copy the answerfile
+  copy: src=ranjan.answer dest=/opt/puppet-enterprise/answers/
+
+- name: Install puppet enterprise 
+  command: chdir=/opt/puppet-enterprise/ ./puppet-enterprise-installer -a ./answers/ranjan.answer
+  register: ps
+
+- debug: msg="{{ ps.stdout }}"
